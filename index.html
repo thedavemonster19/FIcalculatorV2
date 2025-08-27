@@ -1,0 +1,540 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Financial Independence Calculator</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 10px;
+            padding: 30px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        
+        h1 {
+            text-align: center;
+            color: #333;
+            margin-bottom: 30px;
+        }
+        
+        .input-section {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .input-group {
+            display: flex;
+            flex-direction: column;
+        }
+        
+        label {
+            font-weight: bold;
+            margin-bottom: 5px;
+            color: #555;
+        }
+        
+        input {
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 16px;
+        }
+        
+        .calculate-btn {
+            background-color: #4CAF50;
+            color: white;
+            padding: 15px 30px;
+            border: none;
+            border-radius: 5px;
+            font-size: 18px;
+            cursor: pointer;
+            margin: 20px auto;
+            display: block;
+        }
+        
+        .calculate-btn:hover {
+            background-color: #45a049;
+        }
+        
+        .results-section {
+            margin-top: 30px;
+        }
+        
+        .key-results {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .result-card {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 8px;
+            text-align: center;
+            border-left: 4px solid #4CAF50;
+        }
+        
+        .result-card h3 {
+            margin: 0 0 10px 0;
+            color: #333;
+        }
+        
+        .result-card .value {
+            font-size: 24px;
+            font-weight: bold;
+            color: #4CAF50;
+        }
+        
+        .chart-container {
+            margin: 30px 0;
+            height: 400px;
+            position: relative;
+        }
+        
+        .table-container {
+            overflow-x: auto;
+            margin-top: 30px;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 14px;
+        }
+        
+        th, td {
+            padding: 12px;
+            text-align: right;
+            border-bottom: 1px solid #ddd;
+        }
+        
+        th {
+            background-color: #f8f9fa;
+            font-weight: bold;
+            color: #333;
+        }
+        
+        .status-building {
+            color: #ff6b6b;
+            font-weight: bold;
+        }
+        
+        .status-fi {
+            color: #4CAF50;
+            font-weight: bold;
+        }
+        
+        .fi-row {
+            background-color: #e8f5e8;
+        }
+        
+        #results {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Financial Independence Calculator</h1>
+        
+        <div class="input-section">
+            <div class="input-group">
+                <label for="startingCapital">Starting Capital ($)</label>
+                <input type="number" id="startingCapital" value="200000" step="1000">
+            </div>
+            
+            <div class="input-group">
+                <label for="currentAge">Current Age</label>
+                <input type="number" id="currentAge" value="43" step="1">
+            </div>
+            
+            <div class="input-group">
+                <label for="lifeExpectancy">Life Expectancy</label>
+                <input type="number" id="lifeExpectancy" value="90" step="1">
+            </div>
+            
+            <div class="input-group">
+                <label for="activeUntilAge">Active Until Age</label>
+                <input type="number" id="activeUntilAge" value="70" step="1">
+            </div>
+            
+            <div class="input-group">
+                <label for="activeSpending">Annual Active Spending ($)</label>
+                <input type="number" id="activeSpending" value="60000" step="1000">
+            </div>
+            
+            <div class="input-group">
+                <label for="inactiveSpending">Annual Inactive Spending ($)</label>
+                <input type="number" id="inactiveSpending" value="45000" step="1000">
+            </div>
+            
+            <div class="input-group">
+                <label for="rateOfReturn">Rate of Return (%)</label>
+                <input type="number" id="rateOfReturn" value="7" step="0.1">
+            </div>
+            
+            <div class="input-group">
+                <label for="annualContributions">Annual Contributions ($)</label>
+                <input type="number" id="annualContributions" value="60000" step="1000">
+            </div>
+            
+            <div class="input-group">
+                <label for="inflationRate">Inflation Rate (%)</label>
+                <input type="number" id="inflationRate" value="2.1" step="0.1">
+            </div>
+            
+            <div class="input-group">
+                <label for="withdrawalRate">Withdrawal Rate (%)</label>
+                <input type="number" id="withdrawalRate" value="4.7" step="0.1">
+            </div>
+        </div>
+        
+        <button class="calculate-btn" onclick="calculateFI()">Calculate Financial Independence</button>
+        
+        <div id="results" class="results-section">
+            <div class="key-results">
+                <div class="result-card">
+                    <h3>Financial Independence Year</h3>
+                    <div class="value" id="fiYear">-</div>
+                </div>
+                <div class="result-card">
+                    <h3>Final Portfolio Value</h3>
+                    <div class="value" id="finalValue">-</div>
+                </div>
+                <div class="result-card">
+                    <h3>Monthly Savings Required</h3>
+                    <div class="value" id="monthlySavings">-</div>
+                </div>
+            </div>
+            
+            <h3>Portfolio Value Over Time</h3>
+            <div class="chart-container">
+                <canvas id="portfolioChart"></canvas>
+            </div>
+            
+            <h3>Annual Spending vs Withdrawal Capacity</h3>
+            <div class="chart-container">
+                <canvas id="spendingChart"></canvas>
+            </div>
+            
+            <div class="table-container">
+                <table id="resultsTable">
+                    <thead>
+                        <tr>
+                            <th>Year</th>
+                            <th>Age</th>
+                            <th>Portfolio Value</th>
+                            <th>Annual Spending</th>
+                            <th>Withdrawal Capacity</th>
+                            <th>Annual Contributions</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tableBody">
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let portfolioChartInstance = null;
+        let spendingChartInstance = null;
+        
+        function formatCurrency(amount) {
+            return new Intl.NumberFormat('en-US', {
+                style: 'currency',
+                currency: 'USD',
+                minimumFractionDigits: 0,
+                maximumFractionDigits: 0
+            }).format(amount);
+        }
+        
+        function calculateFI() {
+            const inputs = {
+                startingCapital: parseFloat(document.getElementById('startingCapital').value),
+                currentAge: parseInt(document.getElementById('currentAge').value),
+                lifeExpectancy: parseInt(document.getElementById('lifeExpectancy').value),
+                activeUntilAge: parseInt(document.getElementById('activeUntilAge').value),
+                activeSpending: parseFloat(document.getElementById('activeSpending').value),
+                inactiveSpending: parseFloat(document.getElementById('inactiveSpending').value),
+                rateOfReturn: parseFloat(document.getElementById('rateOfReturn').value) / 100,
+                annualContributions: parseFloat(document.getElementById('annualContributions').value),
+                inflationRate: parseFloat(document.getElementById('inflationRate').value) / 100,
+                withdrawalRate: parseFloat(document.getElementById('withdrawalRate').value) / 100
+            };
+            
+            const results = performCalculations(inputs);
+            displayResults(results, inputs);
+        }
+        
+        function performCalculations(inputs) {
+            const years = [];
+            let portfolioValue = inputs.startingCapital;
+            let fiAchieved = false;
+            let fiYear = null;
+            let fiAge = null;
+            let currentYear = new Date().getFullYear();
+            
+            for (let year = 0; year <= inputs.lifeExpectancy - inputs.currentAge; year++) {
+                const age = inputs.currentAge + year;
+                const actualYear = currentYear + year;
+                
+                let annualSpending;
+                if (age <= inputs.activeUntilAge) {
+                    annualSpending = inputs.activeSpending * Math.pow(1 + inputs.inflationRate, year);
+                } else {
+                    annualSpending = inputs.inactiveSpending * Math.pow(1 + inputs.inflationRate, year);
+                }
+                
+                const withdrawalCapacity = portfolioValue * inputs.withdrawalRate;
+                
+                if (!fiAchieved && withdrawalCapacity >= annualSpending) {
+                    fiAchieved = true;
+                    fiYear = actualYear;
+                    fiAge = age;
+                }
+                
+                // Store current year's data before applying growth
+                const contributions = fiAchieved ? 0 : inputs.annualContributions;
+                const status = fiAchieved ? 'Financial Independence Achieved' : 'Building';
+                
+                years.push({
+                    year: actualYear,
+                    age: age,
+                    portfolioValue: portfolioValue,
+                    annualSpending: annualSpending,
+                    withdrawalCapacity: withdrawalCapacity,
+                    contributions: contributions,
+                    status: status,
+                    isFiYear: !fiAchieved && withdrawalCapacity >= annualSpending
+                });
+                
+                // Apply growth and changes for next year (except for the last iteration)
+                if (year < inputs.lifeExpectancy - inputs.currentAge) {
+                    const growthReturn = portfolioValue * inputs.rateOfReturn;
+                    portfolioValue += growthReturn + contributions;
+                    
+                    // After FI is achieved, subtract withdrawals from portfolio
+                    if (fiAchieved) {
+                        portfolioValue -= withdrawalCapacity;
+                    }
+                }
+            }
+            
+            const finalPortfolioValue = portfolioValue;
+            const monthlySavingsRequired = inputs.annualContributions / 12;
+            
+            return {
+                years: years,
+                fiYear: fiYear,
+                fiAge: fiAge,
+                finalPortfolioValue: finalPortfolioValue,
+                monthlySavingsRequired: monthlySavingsRequired
+            };
+        }
+        
+        function displayResults(results, inputs) {
+            document.getElementById('fiYear').textContent = results.fiYear ? `${results.fiYear} (Age ${results.fiAge})` : 'Not Achieved';
+            document.getElementById('finalValue').textContent = formatCurrency(results.finalPortfolioValue);
+            document.getElementById('monthlySavings').textContent = formatCurrency(results.monthlySavingsRequired);
+            
+            createCharts(results);
+            populateTable(results);
+            
+            document.getElementById('results').style.display = 'block';
+        }
+        
+        function createCharts(results) {
+            createPortfolioChart(results);
+            createSpendingChart(results);
+        }
+        
+        function createPortfolioChart(results) {
+            const ctx = document.getElementById('portfolioChart').getContext('2d');
+            
+            if (portfolioChartInstance) {
+                portfolioChartInstance.destroy();
+            }
+            
+            const ages = results.years.map(y => y.age);
+            const portfolioValues = results.years.map(y => y.portfolioValue);
+            
+            const fiIndex = results.years.findIndex(y => y.status === 'Financial Independence Achieved');
+            
+            portfolioChartInstance = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: ages,
+                    datasets: [
+                        {
+                            label: 'Portfolio Value',
+                            data: portfolioValues,
+                            borderColor: '#4CAF50',
+                            backgroundColor: 'rgba(76, 175, 80, 0.1)',
+                            fill: true,
+                            tension: 0.1
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: true,
+                            position: 'top'
+                        }
+                    },
+                    scales: {
+                        x: {
+                            title: {
+                                display: true,
+                                text: 'Age'
+                            }
+                        },
+                        y: {
+                            title: {
+                                display: true,
+                                text: 'Portfolio Value ($)'
+                            },
+                            ticks: {
+                                callback: function(value) {
+                                    return '$' + value.toLocaleString();
+                                }
+                            }
+                        }
+                    },
+                    elements: {
+                        point: {
+                            radius: function(context) {
+                                return context.dataIndex === fiIndex ? 8 : 3;
+                            },
+                            backgroundColor: function(context) {
+                                return context.dataIndex === fiIndex ? '#FF9800' : context.dataset.borderColor;
+                            }
+                        }
+                    }
+                }
+            });
+        }
+        
+        function createSpendingChart(results) {
+            const ctx = document.getElementById('spendingChart').getContext('2d');
+            
+            if (spendingChartInstance) {
+                spendingChartInstance.destroy();
+            }
+            
+            const ages = results.years.map(y => y.age);
+            const annualSpending = results.years.map(y => y.annualSpending);
+            const withdrawalCapacity = results.years.map(y => y.withdrawalCapacity);
+            
+            const fiIndex = results.years.findIndex(y => y.status === 'Financial Independence Achieved');
+            
+            spendingChartInstance = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: ages,
+                    datasets: [
+                        {
+                            label: 'Annual Spending',
+                            data: annualSpending,
+                            borderColor: '#ff6b6b',
+                            backgroundColor: 'rgba(255, 107, 107, 0.1)',
+                            fill: false,
+                            tension: 0.1
+                        },
+                        {
+                            label: 'Withdrawal Capacity',
+                            data: withdrawalCapacity,
+                            borderColor: '#2196F3',
+                            backgroundColor: 'rgba(33, 150, 243, 0.1)',
+                            fill: false,
+                            tension: 0.1
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: true,
+                            position: 'top'
+                        }
+                    },
+                    scales: {
+                        x: {
+                            title: {
+                                display: true,
+                                text: 'Age'
+                            }
+                        },
+                        y: {
+                            title: {
+                                display: true,
+                                text: 'Amount ($)'
+                            },
+                            ticks: {
+                                callback: function(value) {
+                                    return '$' + value.toLocaleString();
+                                }
+                            }
+                        }
+                    },
+                    elements: {
+                        point: {
+                            radius: function(context) {
+                                return context.dataIndex === fiIndex ? 8 : 3;
+                            },
+                            backgroundColor: function(context) {
+                                return context.dataIndex === fiIndex ? '#FF9800' : context.dataset.borderColor;
+                            }
+                        }
+                    }
+                }
+            });
+        }
+        
+        function populateTable(results) {
+            const tableBody = document.getElementById('tableBody');
+            tableBody.innerHTML = '';
+            
+            results.years.forEach(yearData => {
+                const row = document.createElement('tr');
+                if (yearData.status === 'Financial Independence Achieved' && 
+                    results.years[results.years.indexOf(yearData) - 1]?.status === 'Building') {
+                    row.className = 'fi-row';
+                }
+                
+                row.innerHTML = `
+                    <td>${yearData.year}</td>
+                    <td>${yearData.age}</td>
+                    <td>${formatCurrency(yearData.portfolioValue)}</td>
+                    <td>${formatCurrency(yearData.annualSpending)}</td>
+                    <td>${formatCurrency(yearData.withdrawalCapacity)}</td>
+                    <td>${formatCurrency(yearData.contributions)}</td>
+                    <td class="${yearData.status === 'Building' ? 'status-building' : 'status-fi'}">${yearData.status}</td>
+                `;
+                
+                tableBody.appendChild(row);
+            });
+        }
+    </script>
+</body>
+</html>
